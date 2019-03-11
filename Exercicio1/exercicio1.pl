@@ -32,7 +32,7 @@
 % Extensao do predicado utente: #IdUt, Nome, Idade, Cidade -> {V,F}
 
 utente(1,'Pedro',60,'Braga').
-utente(2,'joe',50,'Braga').
+utente(2,'Joe',50,'Braga').
 
 
 %--------------------------------------------------------------------------------------------
@@ -51,4 +51,4 @@ consulta('2018-12-10',1,1,60.50).
 
 solutions(X,Y,Z) :- findall(X,Y,Z).
 
-
+utenteID(ID,R) :- (solutions((ID,N,I,C),utente(ID,N,I,C),R)).
