@@ -118,45 +118,53 @@ involucao(T) :- solutions(I,-T::I,L),
 %--------------------------------------------------------------------------------------------
 % Invariante estrutural do utente (nao permite insercao repetida)
 
-+utente(ID,N,I,C) :: (solutions(ID,(utente(ID,N,I,C)),L),
-					comprimento(L,C),
-					C == 1).
++utente(ID,N,I,C) :: (solutions(ID,utente(ID,N,I,C),L),
+					comprimento(L,R),
+					R == 1).
 
--utente(ID,N,I,C) :: (solutions(ID,(utente(ID,N,I,C)),L),
-					comprimento(L,C),
-					C == 1).
+
+-utente(ID,N,I,C) :: (solutions(ID,utente(ID,N,I,C),L),
+					comprimento(L,R),
+					R == 1).
 
 %--------------------------------------------------------------------------------------------
 % Invariante estrutural do servico (nao permite insercao repetida)
 
 +servico(IDs,D,I,C) :: (solutions(IDs,(servico(IDs,_,_,_)),L),
-					comprimento(L,C),
-					C == 1).
+					comprimento(L,R),
+					R == 1).
 
 -servico(IDs,D,I,C) :: (solutions(IDs,(servico(IDs,D,I,C)),L),
-					comprimento(L,C),
-					C == 1).
+					comprimento(L,R),
+					R == 1).
 
 %--------------------------------------------------------------------------------------------
 % Invariante estrutural da consulta (nao permite insercao repetida)
 
 +consulta(D,IDu,IDs,C) :: (solutions((D,IDu,IDs,C),(consulta(D,IDu,IDs,C)),L),
-					comprimento(L,C),
-					C == 1).
+					comprimento(L,R),
+					R == 1).
 
 +consulta(D,IDu,IDs,C) :: (utente(IDu,_,_,_),servico(IDs,_,_,_)).
 
+-consulta(D,IDu,IDs,C) :: (solutions((D,IDu,IDs,C),(consulta(D,IDu,IDs,C)),L),
+					comprimento(L,R),
+					R == 1).
 
 % [Query 1]--------------------------------------------------------------------------------------------
 % Registar utentes, servicos e consultas
 
 % Extensao do predicado registaUtente: T -> {V,F}
 
-registaUtente(ID,N,I,C) :- evolucao(utente(ID,N,I,C)). %NAO FUNC
+registaUtente(ID,N,I,C) :- evolucao(utente(ID,N,I,C)).
 
-% Extensao do predicado registaUtente: T -> {V,F}
+% Extensao do predicado registaServico: T -> {V,F}
 
-registaServico(IDs,D,I,C) :- evolucao(servico(IDs,D,I,C)). %NAO FUNC
+registaServico(IDs,D,I,C) :- evolucao(servico(IDs,D,I,C)).
+
+% Extensao do predicado registaConsulta: T -> {V,F}
+
+registaConsulta(D,IDu,IDs,C) :- evolucao(consulta(D,IDu,IDs,C)).
 
 
 % [Query 2]--------------------------------------------------------------------------------------------
