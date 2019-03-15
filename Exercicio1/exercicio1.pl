@@ -26,7 +26,8 @@
 
 :- dynamic(utente/4).
 :- dynamic(servico/4).
-:- dynamic(consulta/4).
+:- dynamic(consulta/5).
+:- dynamic(medico/2).
 
 %--------------------------------------------------------------------------------------------
 % Extensao do predicado utente: #IdUt, Nome, Idade, Cidade -> {V,F}
@@ -64,27 +65,45 @@ servico(11,'Urgência','Hospital Lusiadas','Faro').
 servico(12,'Otorrinolaringologia','Hospital da Luz','Lisboa').
 
 %--------------------------------------------------------------------------------------------
-% Extensao do predicado consulta: Data, #IdUt, #IdServ, Custo -> {V,F}
+% [EXTRA] Extensao do predicado medico: #IdMed, Nome -> {V,F}
+medico(1,'Pedro Araújo').
+medico(2,'Adriana Gonçalves').
+medico(3,'Sara Pereira').
+medico(4,'João Leal').
+medico(5,'Eduardo Semanas').
+medico(6,'Pedro Almeida').
+medico(7,'Renato Cruzinha').
+medico(8,'Manuel Monteiro').
+medico(9,'Diogo Soares').
+medico(10,'João Vieira').
+medico(11,'Bruno Ferreira').
+medico(12,'Frederico Pinto').
+medico(13,'Filipe Fortunato').
+medico(14,'Jorge Costeira').
+medico(15,'Josefa Jesus').
 
-consulta('2011-12-12',1,1,55.0).
-consulta('2012-3-12',1,1,55.0).
-consulta('2012-10-1',2,1,55.0).
-consulta('2013-5-23',6,4,45.0).
-consulta('2014-1-18',5,6,0.0).
-consulta('2014-2-7',9,12,20.50).
-consulta('2015-1-2',15,11,0.0).
-consulta('2015-4-4',11,8,80.50).
-consulta('2015-7-25',15,11,0.0).
-consulta('2015-9-5',14,12,20.50).
-consulta('2016-5-30',12,5,75.50).
-consulta('2016-9-5',4,2,15.0).
-consulta('2016-7-28',7,10,0.0).
-consulta('2017-2-12',8,10,0.0).
-consulta('2017-7-26',3,3,0.0).
-consulta('2017-8-20',10,12,20.50).
-consulta('2018-6-15',13,6,0.0).
-consulta('2018-6-29',10,12,35.0).
-consulta('2018-12-10',10,12,35.0).
+%--------------------------------------------------------------------------------------------
+% Extensao do predicado consulta: Data, #IdUt, #IdServ, Custo, #IdMed[EXTRA] -> {V,F}
+
+consulta('2011-12-12',1,1,55.0,4).
+consulta('2012-3-12',1,1,55.0,4).
+consulta('2012-10-1',2,1,55.0,5).
+consulta('2013-5-23',6,4,45.0,13).
+consulta('2014-1-18',5,6,0.0,12).
+consulta('2014-2-7',9,12,20.50,6).
+consulta('2015-1-2',15,11,0.0,7).
+consulta('2015-4-4',11,8,80.50,8).
+consulta('2015-7-25',15,11,0.0,7).
+consulta('2015-9-5',14,12,20.50,6).
+consulta('2016-5-30',12,5,75.50,14).
+consulta('2016-9-5',4,2,15.0,2).
+consulta('2016-7-28',7,10,0.0,3).
+consulta('2017-2-12',8,10,0.0,3).
+consulta('2017-7-26',3,3,0.0,11).
+consulta('2017-8-20',10,12,20.50,6).
+consulta('2018-6-15',13,6,0.0,12).
+consulta('2018-6-29',10,12,35.0,6).
+consulta('2018-12-10',10,12,35.0,6).
 
 %--------------------------------------------------------------------------------------------
 % Extensao do predicado solutions: X, Z, Lista -> {V,F} 
@@ -127,10 +146,16 @@ comprimento([H|T],R) :- comprimento(T,L),
 					comprimento(L,R),
 					R == 1).
 
+
 % Invariante estrutural do utente (controla a remocao de um utente)
 -utente(ID,N,I,C) :: (solutions(ID,utente(ID,N,I,C),L),
 					comprimento(L,R),
 					R == 1).
+
+% Invariante estrutural do utente (nao permite remocao se este estiver associado a consulta)
+-utente(ID,N,I,C) :: (solutions(ID,consulta(_,ID,_,_,_),L),
+					comprimento(L,R),
+					R == 0).
 
 % Invariante estrutural do servico (nao permite insercao repetida de um servico)
 +servico(IDs,D,I,C) :: (solutions(IDs,(servico(IDs,_,_,_)),L),
@@ -142,17 +167,37 @@ comprimento([H|T],R) :- comprimento(T,L),
 					comprimento(L,R),
 					R == 1).
 
+% Invariante estrutural do servico (nao permite remocao se este estiver associado a consulta)
+-servico(IDs,D,I,C) :: (solutions(IDs,consulta(_,_,IDs,_,_),L),
+					comprimento(L,R),
+					R == 0).
+
+% Invariante estrutural do medico (nao permite insercao repetida de um medico)
++medico(IDm,N) :: (solutions(IDm,(medico(IDm,N)),L),
+					comprimento(L,R),
+					R == 1).
+
+% Invariante estrutural do medico (controla a remocao de um medico)
+-medico(IDm,N) :: (solutions(IDm,(medico(IDm,N)),L),
+					comprimento(L,R),
+					R == 1).
+
+% Invariante estrutural do medico (nao permite remocao se este estiver associado a consulta)
+-medico(IDm,N) :: (solutions(IDm,consulta(_,_,_,_,IDm),L),
+					comprimento(L,R),
+					R == 0).
+
 % Invariante estrutural da consulta (nao permite insercao repetida de uma consulta)
-+consulta(D,IDu,IDs,C) :: (solutions((D,IDu,IDs,C),(consulta(D,IDu,IDs,C)),L),
++consulta(D,IDu,IDs,C,IDm) :: (solutions((D,IDu,IDs,C,IDm),(consulta(D,IDu,IDs,C,IDm)),L),
 					comprimento(L,R),
 					R == 1).
 
 % Invariante estrutural da consulta (nao permite insercao de uma consulta cujo id
-% 				           de utente e servico nao existem na base de conhecimento)
-+consulta(D,IDu,IDs,C) :: (utente(IDu,_,_,_),servico(IDs,_,_,_)).
+% 				   de utente, servico e medico nao existem na base de conhecimento)
++consulta(D,IDu,IDs,C,IDm) :: (utente(IDu,_,_,_),servico(IDs,_,_,_),medico(IDm,_)).
 
 % Invariante estrutural da consulta (controla a remocao de uma consulta)
--consulta(D,IDu,IDs,C) :: (solutions((D,IDu,IDs,C),(consulta(D,IDu,IDs,C)),L),
+-consulta(D,IDu,IDs,C,IDm) :: (solutions((D,IDu,IDs,C,IDm),(consulta(D,IDu,IDs,C,IDm)),L),
 					comprimento(L,R),
 					R == 1).
 
@@ -166,8 +211,10 @@ registaUtente(ID,N,I,C) :- evolucao(utente(ID,N,I,C)).
 registaServico(IDs,D,I,C) :- evolucao(servico(IDs,D,I,C)).
 
 % Extensao do predicado registaConsulta: T -> {V,F}
-registaConsulta(D,IDu,IDs,C) :- evolucao(consulta(D,IDu,IDs,C)).
+registaConsulta(D,IDu,IDs,C,IDm) :- evolucao(consulta(D,IDu,IDs,C,IDm)).
 
+% Extensao do predicado registaMedico: T -> {V,F}
+registaMedico(IDm,N) :- evolucao(medico(IDm,N)).
 
 % --------------------------------------------------------------------------------------------
 % [Query 2] Remover utentes, servicos e consultas
@@ -179,7 +226,10 @@ removeUtente(ID) :- involucao(utente(ID,_,_,_)).
 removeServico(ID) :- involucao(servico(ID,_,_,_)).
 
 % Extensao do predicado removeConsulta: T -> {V,F}
-removeConsulta(D,IDu,IDs,C) :- involucao(consulta(D,IDu,IDs,C)).
+removeConsulta(D,IDu,IDs,C,IDm) :- involucao(consulta(D,IDu,IDs,C,IDm)).
+
+% Extensao do predicado removeMedico: T -> {V,F}
+removeMedico(ID) :- involucao(medico(ID,_)).
 
 % --------------------------------------------------------------------------------------------
 % [Query 3] Identificar as instituições prestadoras de servicos
@@ -189,7 +239,7 @@ instServ(R1) :- solutions((I),servico(_,_,I,_),R),
 					apagaRep(R,R1).
 
 % --------------------------------------------------------------------------------------------
-% [Query 4] Identificar utentes, servicos e consultas por criterios de selecao
+% [Query 4] Identificar utentes, servicos, consultas e medicos por criterios de selecao
 
 % Extensao do predicado utenteID: ID, Resultado -> {V,F}
 utenteID(ID,R)      :- (solutions((ID,N,I,C),utente(ID,N,I,C),R)).
@@ -218,16 +268,26 @@ servicoCidade(C,R)  :- (solutions((ID,D,I,C),servico(ID,D,I,C),R)).
 
 
 % Extensao do predicado consultaData: Data, Resultado -> {V,F}
-consultaData(D,R)   :- (solutions((D,IDu,IDs,C),consulta(D,IDu,IDs,C),R)).
+consultaData(D,R)   :- (solutions((D,IDu,IDs,C,IDm),consulta(D,IDu,IDs,C,IDm),R)).
 
 % Extensao do predicado consultaIDu: IDutente, Resultado -> {V,F}
-consultaIDu(IDu,R)  :- (solutions((D,IDu,IDs,C),consulta(D,IDu,IDs,C),R)).
+consultaIDu(IDu,R)  :- (solutions((D,IDu,IDs,C,IDm),consulta(D,IDu,IDs,C,IDm),R)).
 
 % Extensao do predicado consultaIDs: IDservico, Resultado -> {V,F}
-consultaIDs(IDs,R)  :- (solutions((D,IDu,IDs,C),consulta(D,IDu,IDs,C),R)).
+consultaIDs(IDs,R)  :- (solutions((D,IDu,IDs,C,IDm),consulta(D,IDu,IDs,C,IDm),R)).
 
 % Extensao do predicado consultaCusto: Custo, Resultado -> {V,F}
-consultaCusto(C,R)  :- (solutions((D,IDu,IDs,C),consulta(D,IDu,IDs,C),R)).
+consultaCusto(C,R)  :- (solutions((D,IDu,IDs,C,IDm),consulta(D,IDu,IDs,C,IDm),R)).
+
+% Extensao do predicado consultaIDm: IDmedico, Resultado -> {V,F}
+consultaIDm(IDm,R)  :- (solutions((D,IDu,IDs,C,IDm),consulta(D,IDu,IDs,C,IDm),R)).
+
+
+% Extensao do predicado medicoID: IDmedico, Resultado -> {V,F}
+medicoID(IDm,R) :- (solutions((IDm,N),medico(IDm,N),R)).
+
+% Extensao do predicado medicoID: IDmedico, Resultado -> {V,F}
+medicoNome(N,R) :- (solutions((IDm,N),medico(IDm,N),R)).
 
 % ------------------------------------------------------------------------------------------
 % [Query 5] Identificar servicos prestados por instituicao, cidade, data e custo
@@ -239,31 +299,35 @@ servInst(I,R) :- servicoInst(I,R).
 servCidade(C,R) :- servicoCidade(C,R).
 
 % Extensao do predicado servicoData: Data, Resultado -> {V,F}
-servicoData(Data,R) :- solutions(servico(IDs,D,I,C),(consulta(Data,_,IDs,_),servico(IDs,D,I,C)),R1),
+servicoData(Data,R) :- solutions(servico(IDs,D,I,C),(consulta(Data,_,IDs,_,_),servico(IDs,D,I,C)),R1),
 							apagaRep(R1,R).
 
 % Extensao do predicado servicoCusto: Custo, Resultado -> {V,F}
-servicoCusto(Custo,R) :- solutions(servico(IDs,D,I,C),(consulta(_,_,IDs,Custo),servico(IDs,D,I,C)),R1),
+servicoCusto(Custo,R) :- solutions(servico(IDs,D,I,C),(consulta(_,_,IDs,Custo,_),servico(IDs,D,I,C)),R1),
 							apagaRep(R1,R).
 
 % -------------------------------------------------------------------------------------------
 % [Query 6] Identificar os utentes de um servico ou instituicao
 
 % Extensao do predicado utenteServ: Descricao, Resultado -> {V,F}
-utenteServ(D,R) :- solutions((utente(I,N,IDA,CI),Inst),(servico(IDS,D,Inst,_), consulta(_,I,IDS,_),utente(I,N,IDA,CI)),R).
-					
+utenteServ(D,R) :- solutions((utente(I,N,IDA,CI),Inst),(servico(IDS,D,Inst,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R).
+									
 % Extensao do predicado utenteInst: Instituicao, Resultado -> {V,F}
-utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,INS,_), consulta(_,I,IDS,_),utente(I,N,IDA,CI)),R).
+utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,INS,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R).
 
 % -------------------------------------------------------------------------------------------
-% [Query 7] Identificar servicos realizados por utente, instituicao e cidade
+% [Query 7] Identificar servicos realizados por utente, instituicao, cidade e medico
 
-% Extensao do predicado que procura o nome de utente dado o seu ID 
-% nomeUtente: IDutente, Resultado -> {V,F}
+% Extensao do predicado que procura o nome de utente dado o seu ID
+% nomeUtente: IDutente, NomeUtente -> {V,F}
 nomeUtente(IDu,R) :- solutions(N,utente(IDu,N,_,_),R).
 
+% Extensao do predicado que procura o nome de medico dado o seu ID
+% nomeMedico: IDmedico, NomeMedico -> {V,F}
+nomeMedico(IDm,R) :- solutions(N,medico(IDm,N),R).
+
 % Extensao do predicado servicosByUtente: IDutente, Resultado -> {V,F}
-servicosByUtente(IDu,R) :- solutions(servico(IDs,D),(consulta(_,IDu,IDs,_),servico(IDs,D,_,_),utente(IDu,_,_,_)),R1),
+servicosByUtente(IDu,R) :- solutions(servico(IDs,D),(consulta(_,IDu,IDs,_,_),servico(IDs,D,_,_),utente(IDu,_,_,_)),R1),
 							nomeUtente(IDu,L),
 							append(L,R1,R).
 
@@ -275,24 +339,71 @@ servicosByInst(Inst,R) :- solutions(servico(IDs,D),servico(IDs,D,Inst,_),R1),
 servicosByCidade(Cid,R) :- solutions(servico(IDs,D),servico(IDs,D,_,Cid),R1),
 							append([Cid],R1,R).
 
+% Extensao do predicado servicosByMed: IDutente, Resultado -> {V,F}
+servicosByMed(IDm,R) :- solutions(servico(IDs,D),(consulta(_,_,IDs,_,IDm),servico(IDs,D,_,_)),R1),
+							nomeMedico(IDm,L),
+							append(L,R1,R).
+
 % -------------------------------------------------------------------------------------------
-% [Query 8] Calcular custo total dos cuidados de saude por utente, servico, instituicao e data 
+% [Query 8] Calcular custo total dos cuidados de saude por utente, servico, instituicao, 
+%													data e medico. 
 
 % Extensao do predicado custoByUtente: IDutente, Resultado -> {V,F}
-custoByUtente(IDu,R) :- solutions(C,consulta(_,IDu,_,C),R1),
+custoByUtente(IDu,R) :- solutions(C,consulta(_,IDu,_,C,_),R1),
 							somaCustos(R1,R).
 
 % Extensao do predicado custoByServ: IDservico, Resultado -> {V,F}
-custoByServ(IDs,R) :- solutions(C,consulta(_,_,IDs,C),R1),
+custoByServ(IDs,R) :- solutions(C,consulta(_,_,IDs,C,_),R1),
 							somaCustos(R1,R).
 
 % Extensao do predicado custoByInst: Instituicao, Resultado -> {V,F}
-custoByInst(Inst,R) :- solutions(C,(servico(IDs,_,Inst,_),consulta(_,_,IDs,C)),R1),
+custoByInst(Inst,R) :- solutions(C,(servico(IDs,_,Inst,_),consulta(_,_,IDs,C,_)),R1),
 							somaCustos(R1,R).
 
 % Extensao do predicado custoByData: Data, Resultado -> {V,F}
-custoByData(Data,R) :- solutions(C,consulta(Data,_,_,C),R1),
+custoByData(Data,R) :- solutions(C,consulta(Data,_,_,C,_),R1),
 							somaCustos(R1,R).
+
+% Extensao do predicado custoByData: Data, Resultado -> {V,F}
+custoByMed(IDm,R) :- solutions(C,consulta(_,_,_,C,IDm),R1),
+							somaCustos(R1,R).
+
+%--------------------------------------------------------------------------------------------
+% [EXTRAS]
+
+% Extensao do predicado totalConsUt: IDutente, Resultado -> {V,f}
+% (Que calcula total de consultas de um utente)
+totalConsUt(ID,R) :- solutions(ID,consulta(_,ID,_,_,_),R1),
+					comprimento(R1,R).
+
+% Extensao do predicado totalConsInst: Instituição, Resultado -> {V,f}
+% (Que calcula o total de consultas realizadas numa Instituicao)
+totalConsInst(INST,R) :- solutions(Inst,(consulta(_,_,SER,_,_),servico(SER,_,INST,_)),R1),
+					comprimento(R1,R).
+
+% Extensao do predicado totalConsData: Data, Resultado -> {V,f}
+% (Que calcula o total de consultas numa determinada data)
+totalConsData(DAT,R) :- solutions(DAT,consulta(DAT,_,_,_,_),R1),
+						comprimento(R1,R).
+
+% Extensao do predicado gastosUt: IDutente, Resultado -> {V,f}
+% (Que calcula o total gasto por um Utente)
+gastosUt(ID,R) :- solutions(C,consulta(_,ID,_,C,_),R1),
+					somaCustos(R1,R).
+
+% Extensao do predicado rendimento: IDmedico, Resultado -> {V,F} 
+% (Que calcula o rendimento de um Medico)
+rendimento(IDm,R) :- solutions(C,(medico(IDm,_,_),consulta(_,_,_,C,IDm)),R1),
+							somaCustos(R1,R).
+
+% Extensao do predicado medicosByInst: Instituição, Resultado -> {V,F} 
+% (Que calcula os Medicos de uma dada Instituição)
+medicosByInst(Inst,R) :- solutions(N,(servico(IDs,_,Inst,_),medico(_,N,IDs)),R).
+
+% Extensao do predicado pacientesByMedico: IDmedico, Resultado -> {V,F}
+% (Que devolve os pacientes de um dado Médico)
+pacientesByMedico(IDm,R) :- solutions(Nu,(consulta(_,IDu,_,_,IDm),utente(IDu,Nu,_,_)),R1),
+                                    apagaRep(R1,R).
 
 %--------------------------------------------------------------------------------------------
 % [Auxiliar] Funções adicionais para tratamentos de dados
