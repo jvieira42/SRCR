@@ -33,14 +33,14 @@
 % Extensao do predicado utente: #IdUt, Nome, Idade, Cidade -> {V,F}
 
 utente(1,'Pedro Oliveira',60,'Braga').
-utente(2,'José Pedro Morais',50,'Braga').
-utente(3,'José Maria Araújo ',45,'Braga').
+utente(2,'Jose Pedro Morais',50,'Braga').
+utente(3,'Jose Maria Araújo ',45,'Braga').
 utente(4,'Maria dos Santos',12,'Vieira do Minho').
 utente(5,'Rui Pereira',27,'Povoa de Varzim').
 utente(6,'Rui Vieira',24,'Povoa de Lanhoso').
 utente(7,'Marta Santos',55,'Lisboa').
-utente(8,'André Sales',23,'Lisboa').
-utente(9,'João Pereira',22,'Lisboa').
+utente(8,'Andre Sales',23,'Lisboa').
+utente(9,'Joao Pereira',22,'Lisboa').
 utente(10,'Diogo Soares',18,'Lisboa').
 utente(11,'Rita Oliveira',70,'Porto').
 utente(12,'Ana Rita Sousa',43,'Porto').
@@ -53,29 +53,29 @@ utente(15,'Augusto da Silva',44,'Faro').
 
 servico(1,'Cardiologia','Hospital de Braga','Braga').
 servico(2,'Pediatria','Hospital de Privado de Braga','Braga').
-servico(3,'Urgência','Hospital de Braga','Braga').
+servico(3,'Urgencia','Hospital de Braga','Braga').
 servico(4,'Ortopedia','Hospital de Braga','Braga').
 servico(5,'Oncologia','IPO','Porto').
-servico(6,'Urgência','Hospital de Santa Maria','Porto').
+servico(6,'Urgencia','Hospital de Santa Maria','Porto').
 servico(7,'Maternidade','Hospital de Braga','Braga').
 servico(8,'Neurologia','Centro Hospitalar Sao Joao','Porto').
 servico(9,'Oftalmologia','Hospital de Braga','Braga').
-servico(10,'Urgência','Centro Hospitalar de Lisboa Central','Lisboa').
-servico(11,'Urgência','Hospital Lusiadas','Faro').
+servico(10,'Urgencia','Centro Hospitalar de Lisboa Central','Lisboa').
+servico(11,'Urgencia','Hospital Lusiadas','Faro').
 servico(12,'Otorrinolaringologia','Hospital da Luz','Lisboa').
 
 %--------------------------------------------------------------------------------------------
 % [EXTRA] Extensao do predicado medico: #IdMed, Nome -> {V,F}
-medico(1,'Pedro Araújo').
-medico(2,'Adriana Gonçalves').
+medico(1,'Pedro Araujo').
+medico(2,'Adriana Goncalves').
 medico(3,'Sara Pereira').
-medico(4,'João Leal').
+medico(4,'Joao Leal').
 medico(5,'Eduardo Semanas').
 medico(6,'Pedro Almeida').
 medico(7,'Renato Cruzinha').
 medico(8,'Manuel Monteiro').
 medico(9,'Diogo Soares').
-medico(10,'João Vieira').
+medico(10,'Joao Vieira').
 medico(11,'Bruno Ferreira').
 medico(12,'Frederico Pinto').
 medico(13,'Filipe Fortunato').
@@ -286,7 +286,7 @@ consultaIDm(IDm,R)  :- (solutions((D,IDu,IDs,C,IDm),consulta(D,IDu,IDs,C,IDm),R)
 % Extensao do predicado medicoID: IDmedico, Resultado -> {V,F}
 medicoID(IDm,R) :- (solutions((IDm,N),medico(IDm,N),R)).
 
-% Extensao do predicado medicoID: IDmedico, Resultado -> {V,F}
+% Extensao do predicado medicoNome: Nome, Resultado -> {V,F}
 medicoNome(N,R) :- (solutions((IDm,N),medico(IDm,N),R)).
 
 % ------------------------------------------------------------------------------------------
@@ -318,25 +318,17 @@ utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,IN
 % -------------------------------------------------------------------------------------------
 % [Query 7] Identificar servicos realizados por utente, instituicao, cidade e medico
 
-% Extensao do predicado que procura o nome de utente dado o seu ID
-% nomeUtente: IDutente, NomeUtente -> {V,F}
-nomeUtente(IDu,R) :- solutions(N,utente(IDu,N,_,_),R).
-
-% Extensao do predicado que procura o nome de medico dado o seu ID
-% nomeMedico: IDmedico, NomeMedico -> {V,F}
-nomeMedico(IDm,R) :- solutions(N,medico(IDm,N),R).
-
 % Extensao do predicado servicosByUtente: IDutente, Resultado -> {V,F}
 servicosByUtente(IDu,R) :- solutions(servico(IDs,D),(consulta(_,IDu,IDs,_,_),servico(IDs,D,_,_),utente(IDu,_,_,_)),R1),
 							nomeUtente(IDu,L),
 							append(L,R1,R).
 
 % Extensao do predicado servicosByInst: Instituicao, Resultado -> {V,F}
-servicosByInst(Inst,R) :- solutions(servico(IDs,D),servico(IDs,D,Inst,_),R1),
+servicosByInst(Inst,R) :- solutions(servico(IDs,D),(consulta(_,_,IDs,_,_),servico(IDs,D,Inst,_)),R1),
 							append([Inst],R1,R).
 
 % Extensao do predicado servicosByCidade: Cidade, Resultado -> {V,F}
-servicosByCidade(Cid,R) :- solutions(servico(IDs,D),servico(IDs,D,_,Cid),R1),
+servicosByCidade(Cid,R) :- solutions(servico(IDs,D),(consulta(_,_,IDs,_,_),servico(IDs,D,_,Cid),R1),
 							append([Cid],R1,R).
 
 % Extensao do predicado servicosByMed: IDutente, Resultado -> {V,F}
@@ -429,3 +421,10 @@ append([X|Y],Z,[X|W]) :- append(Y,Z,W).
 somaCustos([X],X).
 somaCustos([H|T],R) :- somaCustos(T,L), R is H+L.
 
+% Extensao do predicado que procura o nome de utente dado o seu ID
+% nomeUtente: IDutente, NomeUtente -> {V,F}
+nomeUtente(IDu,R) :- solutions(N,utente(IDu,N,_,_),R).
+
+% Extensao do predicado que procura o nome de medico dado o seu ID
+% nomeMedico: IDmedico, NomeMedico -> {V,F}
+nomeMedico(IDm,R) :- solutions(N,medico(IDm,N),R).
