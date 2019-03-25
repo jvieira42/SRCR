@@ -318,14 +318,6 @@ utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,IN
 % -------------------------------------------------------------------------------------------
 % [Query 7] Identificar servicos realizados por utente, instituicao, cidade e medico
 
-% Extensao do predicado que procura o nome de utente dado o seu ID
-% nomeUtente: IDutente, NomeUtente -> {V,F}
-nomeUtente(IDu,R) :- solutions(N,utente(IDu,N,_,_),R).
-
-% Extensao do predicado que procura o nome de medico dado o seu ID
-% nomeMedico: IDmedico, NomeMedico -> {V,F}
-nomeMedico(IDm,R) :- solutions(N,medico(IDm,N),R).
-
 % Extensao do predicado servicosPorUtente: IDutente, Resultado -> {V,F}
 servicosPorUtente(IDu,R) :- solutions(servico(IDs,D),(consulta(_,IDu,IDs,_,_),servico(IDs,D,_,_),utente(IDu,_,_,_)),R1),
 							nomeUtente(IDu,L),
