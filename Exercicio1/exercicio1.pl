@@ -53,7 +53,7 @@ utente(15,'Augusto da Silva',44,'Faro').
 
 servico(1,'Cardiologia','Hospital de Braga','Braga').
 servico(2,'Pediatria','Hospital Privado de Braga','Braga').
-servico(3,'Urgência','Hospital de Braga','Braga').
+servico(3,'Urgencia','Hospital de Braga','Braga').
 servico(4,'Ortopedia','Hospital de Braga','Braga').
 servico(5,'Oncologia','IPO','Porto').
 servico(6,'Urgencia','Hospital de Santa Maria','Porto').
@@ -310,10 +310,12 @@ servicoCusto(Custo,R) :- solutions(servico(IDs,D,I,C),(consulta(_,_,IDs,Custo,_)
 % [Query 6] Identificar os utentes de um servico ou instituicao
 
 % Extensao do predicado utenteServ: Descricao, Resultado -> {V,F}
-utenteServ(D,R) :- solutions((utente(I,N,IDA,CI),Inst),(servico(IDS,D,Inst,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R).
+utenteServ(D,R) :- solutions((utente(I,N,IDA,CI),Inst),(servico(IDS,D,Inst,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R1),
+							apagaRep(R1,R).
 									
 % Extensao do predicado utenteInst: Instituicao, Resultado -> {V,F}
-utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,INS,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R).
+utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,INS,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R1),
+							apagaRep(R1,R).
 
 % -------------------------------------------------------------------------------------------
 % [Query 7] Identificar servicos realizados por utente, instituicao, cidade e medico
@@ -321,20 +323,24 @@ utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,IN
 % Extensao do predicado servicosPorUtente: IDutente, Resultado -> {V,F}
 servicosPorUtente(IDu,R) :- solutions(servico(IDs,D),(consulta(_,IDu,IDs,_,_),servico(IDs,D,_,_),utente(IDu,_,_,_)),R1),
 							nomeUtente(IDu,L),
-							append(L,R1,R).
+							append(L,R1,R2),
+							apagaRep(R2,R).
 
 % Extensao do predicado servicosPorInst: Instituicao, Resultado -> {V,F}
 servicosPorInst(Inst,R) :- solutions(servico(IDs,D),servico(IDs,D,Inst,_),R1),
-							append([Inst],R1,R).
+							append([Inst],R1,R2),
+							apagaRep(R2,R).
 
 % Extensao do predicado servicosPorCidade: Cidade, Resultado -> {V,F}
 servicosPorCidade(Cid,R) :- solutions(servico(IDs,D),servico(IDs,D,_,Cid),R1),
-							append([Cid],R1,R).
+							append([Cid],R1,R2),
+							apagaRep(R2,R).
 
 % Extensao do predicado servicosPorMedico: IDmedico, Resultado -> {V,F}
 servicosPorMedico(IDm,R) :- solutions(servico(IDs,D),(consulta(_,_,IDs,_,IDm),servico(IDs,D,_,_)),R1),
 							nomeMedico(IDm,L),
-							append(L,R1,R).
+							append(L,R1,R2),
+							apagaRep(R2,R).
 
 % -------------------------------------------------------------------------------------------
 % [Query 8] Calcular custo total dos cuidados de saude por utente, servico, instituicao, 
