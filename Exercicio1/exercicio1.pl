@@ -209,6 +209,7 @@ comprimento([H|T],R) :- comprimento(T,L),
 
 % Extensao do predicado registaUtente: T -> {V,F}
 registaUtente(ID,N,I,C) :- evolucao(utente(ID,N,I,C)).
+% Extensao do predicado utenteIdade: Idade, Resultado ->
 
 % Extensao do predicado registaServico: T -> {V,F}
 registaServico(IDs,D,I,C) :- evolucao(servico(IDs,D,I,C)).
@@ -238,8 +239,8 @@ removeMedico(ID) :- involucao(medico(ID,_)).
 % [Query 3] Identificar as instituições prestadoras de servicos
 
 % Extensao do predicado instServ: ListaResultado -> {V,F}
-instServ(R1) :- solutions((I),servico(_,_,I,_),R),
-					apagaRep(R,R1).
+instServ(R) :- solutions((I),servico(_,_,I,_),R1),
+					apagaRep(R1,R).
 
 % --------------------------------------------------------------------------------------------
 % [Query 4] Identificar utentes, servicos, consultas e medicos por criterios de selecao
@@ -317,7 +318,7 @@ utenteServ(D,R) :- solutions((utente(I,N,IDA,CI),Inst),(servico(IDS,D,Inst,_), c
 							apagaRep(R1,R).
 									
 % Extensao do predicado utenteInst: Instituicao, Resultado -> {V,F}
-utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),servico(D)),(servico(IDS,D,INS,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R1),
+utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),D),(servico(IDS,D,INS,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R1),
 							apagaRep(R1,R).
 
 % -------------------------------------------------------------------------------------------
@@ -387,16 +388,6 @@ totalConsInst(INST,R) :- solutions(Inst,(consulta(_,_,SER,_,_),servico(SER,_,INS
 totalConsData(DAT,R) :- solutions(DAT,consulta(DAT,_,_,_,_),R1),
 						comprimento(R1,R).
 
-% Extensao do predicado gastosUtente: IDutente, Resultado -> {V,f}
-% (Que calcula o total gasto por um Utente)
-gastosUtente(ID,R) :- solutions(C,consulta(_,ID,_,C,_),R1),
-					somaCustos(R1,R).
-
-% Extensao do predicado rendimento: IDmedico, Resultado -> {V,F} 
-% (Que calcula o rendimento de um Medico)
-rendimento(IDm,R) :- solutions(C,(medico(IDm,_),consulta(_,_,_,C,IDm)),R1),
-							somaCustos(R1,R).
-
 % Extensao do predicado medicosPorInst: Instituição, Resultado -> {V,F} 
 % (Que calcula os Medicos de uma dada Instituição)
 medicosPorInst(Inst,R) :- solutions(N,(consulta(_,_,IDs,_,IDm),servico(IDs,_,Inst,_),medico(IDm,N)),R1),
@@ -404,7 +395,7 @@ medicosPorInst(Inst,R) :- solutions(N,(consulta(_,_,IDs,_,IDm),servico(IDs,_,Ins
 
 % Extensao do predicado pacientesPorMedico: IDmedico, Resultado -> {V,F}
 % (Que devolve os pacientes de um dado Médico)
-pacientesPorMedico(IDm,R) :- solutions(Nu,(consulta(_,IDu,_,_,IDm),utente(IDu,Nu,_,_)),R1),
+utentesPorMedico(IDm,R) :- solutions(Nu,(consulta(_,IDu,_,_,IDm),utente(IDu,Nu,_,_)),R1),
                                     apagaRep(R1,R).
 
 %--------------------------------------------------------------------------------------------
