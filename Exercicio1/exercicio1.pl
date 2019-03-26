@@ -141,11 +141,11 @@ comprimento([H|T],R) :- comprimento(T,L),
 %--------------------------------------------------------------------------------------------
 % [Invariantes]
 
+% --{UTENTES}--
 % Invariante estrutural do utente (nao permite insercao repetida de um utente)
-+utente(ID,N,I,C) :: (solutions(ID,utente(ID,N,I,C),L),
++utente(ID,N,I,C) :: (solutions(ID,utente(ID,_,_,_),L),
 					comprimento(L,R),
 					R == 1).
-
 
 % Invariante estrutural do utente (controla a remocao de um utente)
 -utente(ID,N,I,C) :: (solutions(ID,utente(ID,N,I,C),L),
@@ -157,6 +157,7 @@ comprimento([H|T],R) :- comprimento(T,L),
 					comprimento(L,R),
 					R == 0).
 
+% --{SERVICOS}--
 % Invariante estrutural do servico (nao permite insercao repetida de um servico)
 +servico(IDs,D,I,C) :: (solutions(IDs,(servico(IDs,_,_,_)),L),
 					comprimento(L,R),
@@ -172,8 +173,9 @@ comprimento([H|T],R) :- comprimento(T,L),
 					comprimento(L,R),
 					R == 0).
 
+% --{MEDICOS}--
 % Invariante estrutural do medico (nao permite insercao repetida de um medico)
-+medico(IDm,N) :: (solutions(IDm,(medico(IDm,N)),L),
++medico(IDm,N) :: (solutions(IDm,(medico(IDm,_)),L),
 					comprimento(L,R),
 					R == 1).
 
@@ -187,6 +189,7 @@ comprimento([H|T],R) :- comprimento(T,L),
 					comprimento(L,R),
 					R == 0).
 
+% --{CONSULTAS}--
 % Invariante estrutural da consulta (nao permite insercao repetida de uma consulta)
 +consulta(D,IDu,IDs,C,IDm) :: (solutions((D,IDu,IDs,C,IDm),(consulta(D,IDu,IDs,C,IDm)),L),
 					comprimento(L,R),
