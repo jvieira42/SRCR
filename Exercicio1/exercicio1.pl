@@ -321,6 +321,11 @@ utenteServ(D,R) :- solutions((utente(I,N,IDA,CI),Inst),(servico(IDS,D,Inst,_), c
 utenteInst(INS,R) :- solutions((utente(I,N,IDA,CI),D),(servico(IDS,D,INS,_), consulta(_,I,IDS,_,_),utente(I,N,IDA,CI)),R1),
 							apagaRep(R1,R).
 
+% Extensao do predicado utentesPorMedico: IDmedico, Resultado -> {V,F}
+% (Que devolve os pacientes de um dado Médico)
+utentesPorMedico(IDm,R) :- solutions(Nu,(consulta(_,IDu,_,_,IDm),utente(IDu,Nu,_,_)),R1),
+                                    apagaRep(R1,R).
+
 % -------------------------------------------------------------------------------------------
 % [Query 7] Identificar servicos realizados por utente, instituicao, cidade e medico
 
@@ -373,17 +378,17 @@ custoPorMedico(IDm,R) :- solutions(C,consulta(_,_,_,C,IDm),R1),
 %--------------------------------------------------------------------------------------------
 % [EXTRAS]
 
-% Extensao do predicado totalConsUtente: IDutente, Resultado -> {V,f}
+% Extensao do predicado totalConsUtente: IDutente, Resultado -> {V,F}
 % (Que calcula total de consultas de um utente)
 totalConsUtente(ID,R) :- solutions(ID,consulta(_,ID,_,_,_),R1),
 					comprimento(R1,R).
 
-% Extensao do predicado totalConsInst: Instituição, Resultado -> {V,f}
+% Extensao do predicado totalConsInst: Instituição, Resultado -> {V,F}
 % (Que calcula o total de consultas realizadas numa Instituicao)
 totalConsInst(INST,R) :- solutions(Inst,(consulta(_,_,SER,_,_),servico(SER,_,INST,_)),R1),
 					comprimento(R1,R).
 
-% Extensao do predicado totalConsData: Data, Resultado -> {V,f}
+% Extensao do predicado totalConsData: Data, Resultado -> {V,F}
 % (Que calcula o total de consultas numa determinada data)
 totalConsData(DAT,R) :- solutions(DAT,consulta(DAT,_,_,_,_),R1),
 						comprimento(R1,R).
@@ -392,11 +397,6 @@ totalConsData(DAT,R) :- solutions(DAT,consulta(DAT,_,_,_,_),R1),
 % (Que calcula os Medicos de uma dada Instituição)
 medicosPorInst(Inst,R) :- solutions(N,(consulta(_,_,IDs,_,IDm),servico(IDs,_,Inst,_),medico(IDm,N)),R1),
 							apagaRep(R1,R).
-
-% Extensao do predicado pacientesPorMedico: IDmedico, Resultado -> {V,F}
-% (Que devolve os pacientes de um dado Médico)
-utentesPorMedico(IDm,R) :- solutions(Nu,(consulta(_,IDu,_,_,IDm),utente(IDu,Nu,_,_)),R1),
-                                    apagaRep(R1,R).
 
 %--------------------------------------------------------------------------------------------
 % [Auxiliar] Funções adicionais para tratamentos de dados
