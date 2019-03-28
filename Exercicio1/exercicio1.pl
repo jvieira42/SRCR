@@ -209,7 +209,6 @@ comprimento([H|T],R) :- comprimento(T,L),
 
 % Extensao do predicado registaUtente: T -> {V,F}
 registaUtente(ID,N,I,C) :- evolucao(utente(ID,N,I,C)).
-% Extensao do predicado utenteIdade: Idade, Resultado ->
 
 % Extensao do predicado registaServico: T -> {V,F}
 registaServico(IDs,D,I,C) :- evolucao(servico(IDs,D,I,C)).
