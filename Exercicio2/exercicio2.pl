@@ -19,53 +19,45 @@
 
 :- op(900,xfy,'::').
 
+:- style_check(-discontiguous).
 :- dynamic utente/4.
 :- dynamic servico/4.
 :- dynamic consulta/5.
 :- dynamic medico/2.
 :- dynamic '-'/1.
+:- dynamic excecao/1.
 
 % -------------------------------------------------------------------------------------------
-% BASE DE CONHECIMENTO INICIAL (informação sobre utentes, servicos, medicos e consultas)
+% BASE DE CONHECIMENTO (informação sobre utentes, servicos, medicos e consultas)
 %--------------------------------------------------------------------------------------------
 
 %--------------------------------------------------------------------------------------------
-% Extensao do predicado utente: #IdUt, Nome, Idade, Cidade -> {V,F}
+% Extensao do predicado utente: #IdUt, Nome, Idade, Cidade -> {V,F,D}
 
-utente(1,'Pedro Oliveira',60,'Braga').
-utente(2,'Jose Pedro Morais',50,'Braga').
-utente(3,'Jose Maria Araújo ',45,'Braga').
+utente(3,'Jose Maria Araújo',45,'Braga').
 utente(4,'Maria dos Santos',12,'Vieira do Minho').
-utente(5,'Rui Pereira',27,'Povoa de Varzim').
-utente(6,'Rui Vieira',24,'Povoa de Lanhoso').
 utente(7,'Marta Santos',55,'Lisboa').
-utente(8,'Andre Sales',23,'Lisboa').
 utente(9,'Joao Pereira',22,'Lisboa').
 utente(10,'Diogo Soares',18,'Lisboa').
 utente(11,'Rita Oliveira',70,'Porto').
 utente(12,'Ana Rita Sousa',43,'Porto').
 utente(13,'Beatriz Cunha',22,'Porto').
-utente(14,'Ana Beatriz de Oliveira',32,'Setubal').
 utente(15,'Augusto da Silva',44,'Faro').
 
 %--------------------------------------------------------------------------------------------
-% Extensao do predicado servico: #IdServ, Descricao, Instituicao, Cidade -> {V,F}
+% Extensao do predicado servico: #IdServ, Descricao, Instituicao, Cidade -> {V,F,D}
 
 servico(1,'Cardiologia','Hospital de Braga','Braga').
 servico(2,'Pediatria','Hospital Privado de Braga','Braga').
 servico(3,'Urgencia','Hospital de Braga','Braga').
-servico(4,'Ortopedia','Hospital de Braga','Braga').
 servico(5,'Oncologia','IPO','Porto').
-servico(6,'Urgencia','Hospital de Santa Maria','Porto').
 servico(7,'Maternidade','Hospital de Braga','Braga').
 servico(8,'Neurologia','Centro Hospitalar Sao Joao','Porto').
 servico(9,'Oftalmologia','Hospital de Braga','Braga').
-servico(10,'Urgencia','Centro Hospitalar de Lisboa Central','Lisboa').
-servico(11,'Urgencia','Hospital Lusiadas','Faro').
 servico(12,'Otorrinolaringologia','Hospital da Luz','Lisboa').
 
 %--------------------------------------------------------------------------------------------
-% [EXTRA] Extensao do predicado medico: #IdMed, Nome -> {V,F}
+% [EXTRA] Extensao do predicado medico: #IdMed, Nome -> {V,F,D}
 
 medico(1,'Pedro Araujo').
 medico(2,'Adriana Goncalves').
@@ -81,15 +73,12 @@ medico(11,'Bruno Ferreira').
 medico(12,'Frederico Pinto').
 medico(13,'Filipe Fortunato').
 medico(14,'Jorge Costeira').
-medico(15,'Josefa Jesus').
 
 %--------------------------------------------------------------------------------------------
-% Extensao do predicado consulta: Data, #IdUt, #IdServ, Custo, #IdMed[EXTRA] -> {V,F}
+% Extensao do predicado consulta: Data, #IdUt, #IdServ, Custo, #IdMed[EXTRA] -> {V,F,D}
 
-consulta('2011-12-12',1,1,55.0,1).
 consulta('2012-3-12',1,1,55.0,4).
 consulta('2012-10-1',2,1,55.0,5).
-consulta('2013-5-23',6,4,45.0,13).
 consulta('2014-1-18',5,6,0.0,12).
 consulta('2014-2-7',9,12,20.50,6).
 consulta('2015-1-2',15,11,0.0,7).
@@ -101,10 +90,8 @@ consulta('2016-9-5',4,2,15.0,2).
 consulta('2016-7-28',7,10,0.0,3).
 consulta('2017-2-12',8,10,0.0,3).
 consulta('2017-7-26',3,3,0.0,11).
-consulta('2017-8-20',10,12,20.50,6).
 consulta('2018-6-15',13,6,0.0,12).
 consulta('2018-6-29',10,12,35.0,6).
-consulta('2018-12-10',10,12,35.0,6).
 
 %--------------------------------------------------------------------------------------------
 % Extensao do predicado solutions: X, Z, Lista -> {V,F} 
@@ -259,7 +246,7 @@ instServ(R) :- solutions((I),servico(_,_,I,_),R1),
 % [Query 4] Identificar utentes, servicos, consultas e medicos por criterios de selecao
 
 % Extensao do predicado utenteID: ID, Resultado -> {V,F}
-utenteID(ID,R)      :- (solutions((ID,N,I,C),utente(ID,N,I,C),R)).
+utenteID(ID,R)      :- (solutions(utente(ID,N,I,C),utente(ID,N,I,C),[R|_])).
 
 % Extensao do predicado utenteNome: Nome, Resultado -> {V,F}
 utenteNome(N,R)     :- (solutions((ID,N,I,C),utente(ID,N,I,C),R)).
@@ -459,16 +446,113 @@ nomeMedico(IDm,R) :- solutions(N,medico(IDm,N),R).
 % Representação de Conhecimento Imperfeito
 %--------------------------------------------------------------------------------------------
 
-% --> Conhecimento Incerto <-- %
+% ----> Conhecimento Incerto <---- %
+
+% Cidade do utente 2 desconhecida
+utente(2,'Jose Pedro Morais',50,cid_desconhecida).
+
+% Cidade do utente 5 desconhecida, mas sabendo que não é Braga
+utente(5,'Rui Pereira',27,cid_desconhecida).
+-utente(5,'Rui Pereira',27,'Braga').
+
+% Idade do utente 8 desconhecida
+utente(8,'Andre Sales',idade_desc,'Lisboa').
+
+% Instituicao do servico 4 desconhecida
+servico(4,'Ortopedia',inst_desc,'Braga').
+
+% Descricao do servico 6 desconhecida
+servico(6,descricao_desc,'Hospital de Santa Maria','Porto').
+
+% Custo de consulta desconhecido
+consulta('2011-12-12',1,1,custo_desc,1).
+
+% Medico de consulta desconhecido, sabendo que nao é o médico 6
+consulta('2013-5-23',6,4,45.0,med_desc).
+-consulta('2013-5-23',6,4,45.0,6).
 
 
-% --> Conhecimento Impreciso <-- %
+excecao(utente(ID,N,I,_)) :- utente(ID,N,I,cid_desconhecida).
+excecao(utente(ID,N,_,C)) :- utente(ID,N,idade_desc,C).
+excecao(servico(IDs,D,_,C)) :- servico(IDs,D,inst_desc,C).
+excecao(servico(IDs,_,I,C)) :- servico(IDs,descricao_desc,I,C).
+excecao(consulta(D,IDu,IDs,C,_)) :- consulta(D,IDu,IDs,C,med_desc).
+excecao(consulta(D,IDu,IDs,_,IDm)) :- consulta(D,IDu,IDs,custo_desc,IDm).
+
+%--------------------------------------------------------------------------------------------
+% ----> Conhecimento Impreciso <---- %
+
+% Idade do utente 6 desconhecida, mas sabendo que está entre 50 e 60
+utente(6,'Rui Vieira',idade_imp,'Povoa de Lanhoso').
+
+excecao(utente(6,'Rui Vieira',Idade,'Povoa de Lanhoso')) 
+	:- Idade >= 50,
+	   Idade =< 60.
+
+% Nome do utente 1 podera ter como apelido Oliveira ou Ferreira
+utente(1,nome_imp,60,'Braga').
+
+excecao(utente(1,'Pedro Oliveira',60,'Braga')).
+excecao(utente(1,'Pedro Ferreira',60,'Braga')).
+
+% Descricao do servico 11 poderá ser Urgencia, Cardiologia ou Oftalmologia
+servico(11,descricao_imp,'Hospital Lusiadas','Faro').
+
+excecao(servico(11,'Urgencia','Hospital Lusiadas','Faro')).
+excecao(servico(11,'Cardiologia','Hospital Lusiadas','Faro')).
+excecao(servico(11,'Oftalmologia','Hospital Lusiadas','Faro')).
+
+% Custo de uma consulta imprecisa, mas sabendo que está entre 20 e 40
+consulta('2018-12-10',10,12,custo_imp,6).
+
+excecao(consulta('2018-12-10',10,12,Custo,6))
+	:- Custo >= 20,
+	   Custo =< 40.
+
+%--------------------------------------------------------------------------------------------
+% ----> Conhecimento Interdito <---- %
+
+% Impossibilidade de saber cidade do utente 14
+nulo(cidade_interdita).
+
+utente(14,'Ana Beatriz de Oliveira',32,cidade_interdita).
++utente(_,_,_,Cidade) :: (solutions(Cidade, 
+				(utente(14,_,_,Cidade), nao(nulo(Cidade))),S),
+				comprimento(S,N), N==0).
 
 
-% --> Conhecimento Interdito <-- %
+% Impossibilidade de saber Instituicao do servico 10
+nulo(inst_interdita).
+
+servico(10,'Urgencia',inst_interdita,'Lisboa').
++servico(_,_,Inst,_) :: (solutions(Inst, 
+				(servico(10,_,Inst,_), nao(nulo(Inst))),S),
+				comprimento(S,N), N==0).
+
+% Impossibilidade de saber Custo de uma consulta
+nulo(custo_interdito).
+
+consulta('2017-8-20',10,12,custo_interdito,6).
++consulta(_,_,_,Custo,_) :: (solutions(Custo, 
+				(consulta('2017-8-20',_,_,Custo,_), nao(nulo(Custo))),S),
+				comprimento(S,N), N==0).
+
+% Impossibilidade de saber nome do medico 15
+nulo(nome_interdito).
+
+medico(15,nome_interdito).
++medico(_,Nome) :: (solutions(Nome, 
+				(medico(15,Nome), nao(nulo(Nome))),S),
+				comprimento(S,N), N==0).
 
 
 %--------------------------------------------------------------------------------------------
 % Evolução de Conhecimento Imperfeito
 %--------------------------------------------------------------------------------------------
+
+% Extensao do predicado trocar: Antigo, Novo -> {V,F}
+trocar(A,N) :- remover(A), evolucao(N).
+trocar(A,_) :- assert(A), !, fail.
+
+% Transformar conhecimento imperfeito (desconhecido/impreciso) em conhecimento perfeito
 
