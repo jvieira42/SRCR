@@ -18,6 +18,9 @@
 % SICStus PROLOG: Definicoes iniciais
 
 :- op(900,xfy,'::').
+:- op(400, yfx, '&&'). % Operador da conjunção
+:- op(400, yfx, '$$'). % Operador da disjunção
+:- op(600, xfx, 'equal'). % Operador de igualdade
 
 :- style_check(-discontiguous).
 :- dynamic utente/4.
@@ -128,15 +131,53 @@ comprimento([H|T],R) :- comprimento(T,L),
 		R is 1+L.
 
 %--------------------------------------------------------------------------------------------
+% Tabela de Inferência
+%--------------------------------------------------------------------------------------------
+
+% Conjunções 
+equal(verdadeiro,   &&(verdadeiro,verdadeiro)).
+equal(desconhecido, &&(desconhecido,verdadeiro)).
+equal(desconhecido, &&(verdadeiro,desconhecido)).
+equal(desconhecido, &&(desconhecido,desconhecido)).
+equal(falso,        &&(falso,_)).
+equal(falso,        &&(_,falso)).
+
+% Disjunções
+equal(falso,        $$(falso,falso)).
+equal(desconhecido, $$(desconhecido,falso)).
+equal(desconhecido, $$(falso,desconhecido)).
+equal(desconhecido, $$(desconhecido,desconhecido)).
+equal(verdadeiro,   $$(verdadeiro,_)).
+equal(verdadeiro,   $$(_,verdadeiro)).
+
+%--------------------------------------------------------------------------------------------
 % Extensao do meta-predicado nao: Q -> {V,F}
 nao(Questao) :- Questao, !, fail.
 nao(Questao).
+
+% Extensao do meta-predicado and: Questao1,Questao2,Resposta -> {V,F}
+and(X,Y,R) :- R equal X&&Y.
+
+% Extensao do meta-predicado or: Questao1,Questao2,Resposta -> {V,F}
+or(X,Y,R) :-  R equal X$$Y.
 
 % Extensao do meta-predicado demo: Questao,Resposta -> {V,F}
 %                            Resposta = { verdadeiro,falso,desconhecido }
 demo(Questao,verdadeiro) :- Questao.
 demo(Questao,falso) :- -Questao.
 demo(Questao,desconhecido) :- nao(Questao), nao(-Questao).
+
+% Extensao do meta-predicado demoConj: [Questao],Resposta -> {V,F}
+%                            Resposta = { verdadeiro,falso,desconhecido }
+demoConj([],verdadeiro).
+demoConj([X],R) :- demo(X,R).
+demoConj([Q1|Q2],R) :- demo(Q1,R1), demoConj(Q2,R2), and(R1,R2,R).
+
+% Extensao do meta-predicado demoDisj: [Questao],Resposta -> {V,F}
+%                            Resposta = { verdadeiro,falso,desconhecido }
+demoDisj([],falso).
+demoDisj([X],R) :- demo(X,R).
+demoDisj([Q1|Q2],R) :- demo(Q1,R1), demoDisj(Q2,R2), or(R1,R2,R).
 
 %--------------------------------------------------------------------------------------------
 % Invariantes
@@ -479,7 +520,6 @@ excecao(utente(ID,N,I,_)) :- utente(ID,N,I,cid_desconhecida).
 excecao(utente(ID,N,_,C)) :- utente(ID,N,idade_desc,C).
 excecao(servico(IDs,D,_,C)) :- servico(IDs,D,inst_desc,C).
 excecao(servico(IDs,_,I,C)) :- servico(IDs,descricao_desc,I,C).
-excecao(consulta(D,IDu,IDs,C,_)) :- consulta(D,IDu,IDs,C,med_desc).
 excecao(consulta(D,IDu,IDs,_,IDm)) :- consulta(D,IDu,IDs,custo_desc,IDm).
 excecao(consulta(_,IDu,IDs,C,IDm)) :- consulta(no_date,IDu,IDs,C,IDm).
 
@@ -657,6 +697,54 @@ evolucao(excecao(consulta(D,IDu,IDs,_,IDm)) :- consulta(D,IDu,IDs,Simbolo,IDm)).
 %--------------------------------------------------------------------------------------------
 % --> Declarar conhecimento Impreciso
 
+% [UTENTES]
+% Nome desconhecido dentro de um conjunto de valores
+utente_impreciso(nome,_,[]).
+utente_impreciso(nome,ID,[H|T]) :- utenteID(ID,utente(ID,N,I,C)), atom(N),
+				evolucao(excecao(utente(ID,H,I,C))),utente_impreciso(nome,ID,T).
+
+% Idade desconhecida dentro de um intervalo entre Min e Max
+utente_impreciso(idade,ID,Min,Max) :- utenteID(ID,utente(ID,N,I,C)), atom(I),
+				evolucao(excecao(utente(ID,N,Idade,C)) :- (Idade >= Min, Idade =< Max)).
+
+% Cidade desconhecida dentro de um conjunto de valores
+utente_impreciso(cidade,_,[]).
+utente_impreciso(cidade,ID,[H|T]) :- utenteID(ID,utente(ID,N,I,C)), atom(C),
+				evolucao(excecao(utente(ID,N,I,H))),utente_impreciso(cidade,ID,T).
+
+% [SERVICOS]
+% Descricao desconhecida dentro de um conjunto de valores
+servico_impreciso(descricao,_,[]).
+servico_impreciso(descricao,ID,[H|T]) :- servicoID(ID,servico(ID,D,I,C)), atom(D),
+				evolucao(excecao(servico(ID,H,I,C))),servico_impreciso(descricao,ID,T).
+
+% Instituicao desconhecida dentro de um conjunto de valores
+servico_impreciso(instituicao,_,[]).
+servico_impreciso(instituicao,ID,[H|T]) :- servicoID(ID,servico(ID,D,I,C)), atom(I),
+				evolucao(excecao(servico(ID,D,H,C))),servico_impreciso(instituicao,ID,T).
+
+% Cidade desconhecida dentro de um conjunto de valores
+servico_impreciso(cidade,_,[]).
+servico_impreciso(cidade,ID,[H|T]) :- servicoID(ID,servico(ID,D,I,C)), atom(C),
+				evolucao(excecao(servico(ID,D,I,H))),servico_impreciso(cidade,ID,T).
+
+% [MEDICOS]
+% Nome desconhecido dentro de um conjunto de valores
+medico_impreciso(nome,_,[]).
+medico_impreciso(nome,ID,[H|T]) :- medicoID(ID,medico(ID,N)), atom(N),
+				evolucao(excecao(medico(ID,H))),medico_impreciso(nome,ID,T).
+
+% [CONSULTAS]
+% Data desconhecida dentro de um conjunto de valores (Simbolo = no_date, por ex.)
+consulta_imprecisa(data,_,[]).
+consulta_imprecisa(data,Simbolo,[H|T]) :- consultaData(Simbolo, consulta(Simbolo,_,_,_,_)), 
+			   atom(Simbolo),
+evolucao(excecao(consulta(H,IDu,IDs,C,IDm))),consulta_imprecisa(data,Simbolo,T).
+
+% Custo desconhecido dentro de um intervalo entre Min e Max (Simbolo = no_custo, por ex.)
+consulta_imprecisa(custo, Simbolo,Min,Max) :- consultaCusto(Simbolo, consulta(_,_,_,Simbolo,_)), 
+			   atom(Simbolo),
+evolucao(excecao(consulta(D,IDu,IDs,Custo,IDm)) :- (Custo >= Min, Custo =< Max)).
 
 
 %--------------------------------------------------------------------------------------------
