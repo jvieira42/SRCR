@@ -1,4 +1,4 @@
-% Sistemas de Representação de Conhecimento e Raciocínio - Exercicio 2
+	% Sistemas de Representação de Conhecimento e Raciocínio - Exercicio 2
 % Grupo 15
 
 % Manuel Monteiro
@@ -655,44 +655,44 @@ conhecer_consulta(custo, Simbolo, Custo) :- consultaCusto(Simbolo, consulta(D,ID
 % [UTENTES]
 % Nome incerto 
 utente_incerto(nome,ID) :- utenteID(ID,utente(_,N,_,_)), atom(N),
-		       evolucao(excecao(utente(ID,_,I,C)) :- utente(ID,N,I,C)).
+		       evolucao((excecao(utente(ID,_,I,C)) :- utente(ID,N,I,C))).
 
 % Idade incerta 
 utente_incerto(idade,ID) :- utenteID(ID,utente(_,_,I,_)), atom(I),
-		       evolucao(excecao(utente(ID,N,_,C)) :- utente(ID,N,I,C)).
+		       evolucao((excecao(utente(ID,N,_,C)) :- utente(ID,N,I,C))).
 
 % Cidade incerta 
 utente_incerto(cidade,ID) :- utenteID(ID,utente(_,_,_,C)), atom(C),
-		       evolucao(excecao(utente(ID,N,I,_)) :- utente(ID,N,I,C)).
+		       evolucao((excecao(utente(ID,N,I,_)) :- utente(ID,N,I,C))).
 
 % [SERVICOS]
 % Descricao incerta
 servico_incerto(descricao,ID) :- servicoID(ID,servico(_,D,_,_)), atom(D),
-		       evolucao(excecao(servico(ID,_,I,C)) :- servico(ID,D,I,C)).
+		       evolucao((excecao(servico(ID,_,I,C)) :- servico(ID,D,I,C))).
 
 % Instituicao incerta
 servico_incerto(instituicao,ID) :- servicoID(ID,servico(_,_,I,_)), atom(I),
-		       evolucao(excecao(servico(ID,D,_,C)) :- servico(ID,D,I,C)).
+		       evolucao((excecao(servico(ID,D,_,C)) :- servico(ID,D,I,C))).
 
 % Cidade incerta
 servico_incerto(cidade,ID) :- servicoID(ID,servico(_,_,_,C)), atom(C),
-		       evolucao(excecao(servico(ID,D,I,_)) :- servico(ID,D,I,C)).
+		       evolucao((excecao(servico(ID,D,I,_)) :- servico(ID,D,I,C))).
 
 % [MEDICOS]
 % Nome incerto
 medico_incerto(nome,ID) :- medicoID(ID,medico(_,N)), atom(N),
-		       evolucao(excecao(medico(ID,_)) :- medico(ID,N)).
+		       evolucao((excecao(medico(ID,_)) :- medico(ID,N))).
 
 % [CONSULTAS]
 % Data incerta (Simbolo = no_date, por ex.)
 consulta_incerta(data, Simbolo) :- consultaData(Simbolo, consulta(Simbolo,_,_,_,_)), 
 			   atom(Simbolo),
-evolucao(excecao(consulta(_,IDu,IDs,C,IDm)) :- consulta(Simbolo,IDu,IDs,C,IDm)).
+evolucao((excecao(consulta(_,IDu,IDs,C,IDm)) :- consulta(Simbolo,IDu,IDs,C,IDm))).
 
 % Custo incerto (Simbolo = no_custo, por ex.)
 consulta_incerta(custo, Simbolo) :- consultaCusto(Simbolo, consulta(_,_,_,Simbolo,_)), 
 			   atom(Simbolo),
-evolucao(excecao(consulta(D,IDu,IDs,_,IDm)) :- consulta(D,IDu,IDs,Simbolo,IDm)).
+evolucao((excecao(consulta(D,IDu,IDs,_,IDm)) :- consulta(D,IDu,IDs,Simbolo,IDm))).
 
 %--------------------------------------------------------------------------------------------
 % --> Declarar conhecimento Impreciso
@@ -705,7 +705,7 @@ utente_impreciso(nome,ID,[H|T]) :- utenteID(ID,utente(ID,N,I,C)), atom(N),
 
 % Idade desconhecida dentro de um intervalo entre Min e Max
 utente_impreciso(idade,ID,Min,Max) :- utenteID(ID,utente(ID,N,I,C)), atom(I),
-				evolucao(excecao(utente(ID,N,Idade,C)) :- (Idade >= Min, Idade =< Max)).
+				evolucao((excecao(utente(ID,N,Idade,C)) :- (Idade >= Min, Idade =< Max))).
 
 % Cidade desconhecida dentro de um conjunto de valores
 utente_impreciso(cidade,_,[]).
@@ -744,7 +744,7 @@ evolucao(excecao(consulta(H,IDu,IDs,C,IDm))),consulta_imprecisa(data,Simbolo,T).
 % Custo desconhecido dentro de um intervalo entre Min e Max (Simbolo = no_custo, por ex.)
 consulta_imprecisa(custo, Simbolo,Min,Max) :- consultaCusto(Simbolo, consulta(_,_,_,Simbolo,_)), 
 			   atom(Simbolo),
-evolucao(excecao(consulta(D,IDu,IDs,Custo,IDm)) :- (Custo >= Min, Custo =< Max)).
+evolucao((excecao(consulta(D,IDu,IDs,Custo,IDm)) :- (Custo >= Min, Custo =< Max))).
 
 
 %--------------------------------------------------------------------------------------------
